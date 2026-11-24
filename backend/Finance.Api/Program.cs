@@ -1,0 +1,33 @@
+using Finance.Application.Imports;
+using Finance.Application.Exceptions;
+using Finance.Application.Reconciliation;
+using Finance.Application.Ledger;
+using Finance.Application.Classification;
+using Finance.Infrastructure.Persistence;
+using System.Text.Json.Serialization;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddFinancePersistence(builder.Configuration.GetConnectionString("FinanceDb") ?? "Data Source=finance.db");
+builder.Services.AddScoped<IImportBatchRepository, EfImportBatchRepository>();
+builder.Services.AddScoped<ImportBatchService>();
+builder.Services.AddScoped<IReconciliationRepository, EfReconciliationRepository>();
+builder.Services.AddScoped<ReconciliationService>();
+builder.Services.AddScoped<IFinanceExceptionRepository, EfFinanceExceptionRepository>();
+builder.Services.AddScoped<ExceptionService>();
+builder.Services.AddScoped<ILedgerRepository, EfLedgerRepository>();
+builder.Services.AddScoped<LedgerService>();
+builder.Services.AddScoped<IClassificationRepository, EfClassificationRepository>();
+builder.Services.AddScoped<ClassificationService>();
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod()));
+
+var app = builder.Build();
+await app.Services.InitializeFinanceDatabaseAsync();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseCors();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();

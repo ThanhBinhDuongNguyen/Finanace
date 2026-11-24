@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/Finance.Api/Finance.Api.csproj" />
+    <Project Path="backend/Finance.Application/Finance.Application.csproj" />
+    <Project Path="backend/Finance.Domain/Finance.Domain.csproj" />
+    <Project Path="backend/Finance.Infrastructure/Finance.Infrastructure.csproj" />
+  </Folder>
+</Solution>
