@@ -9,6 +9,7 @@ public sealed record ClassificationResult(int Classified, int Unmapped, int Skip
 
 public interface IClassificationRepository
 {
+    Task<T> TransactionAsync<T>(Func<Task<T>> action, CancellationToken ct);
     Task<ClassificationMapping?> FindMappingAsync(ImportSourceType sourceType, string sourceBusinessType, DateOnly effectiveOn, CancellationToken cancellationToken);
     Task<bool> HasClassificationAsync(Guid importLineId, CancellationToken cancellationToken);
     Task AddMappingAsync(ClassificationMapping mapping, CancellationToken cancellationToken);

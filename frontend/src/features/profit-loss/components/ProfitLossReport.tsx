@@ -1,3 +1,5 @@
+import { ReportFrame } from "../../../components/ui/ReportFrame";
+
 type RowKind = "group" | "total" | "margin" | "standard";
 
 type ProfitLossRow = {
@@ -30,28 +32,27 @@ const rows: ProfitLossRow[] = [
 ];
 
 const rowClass: Record<RowKind, string> = {
-  group: "bg-[#d9e5f1] font-bold text-[#17375e]",
-  total: "font-bold text-slate-950",
+  group: "finance-row-group bg-[#d9e5f1] font-bold text-[#17375e]",
+  total: "finance-row-total font-bold text-slate-950",
   margin: "italic text-slate-600",
   standard: "text-slate-700",
 };
 
 export function ProfitLossReport() {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <h2 className="mb-3 text-base font-bold text-[#17375e]">Báo cáo kết quả kinh doanh theo tháng</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-[1280px] w-full border-collapse text-right text-sm">
+    <ReportFrame title="Báo cáo kết quả kinh doanh theo tháng" description="Đơn vị tài chính: triệu đồng; tỷ lệ và số lượng theo tiêu đề cột." scrollHint>
+      <div className="finance-table-scroll" tabIndex={0} role="region" aria-label="Bảng số liệu có thể cuộn ngang">
+        <table className="finance-table min-w-[1280px]"><caption className="sr-only">Báo cáo kết quả kinh doanh theo tháng</caption>
           <thead className="bg-[#203f70] text-white">
             <tr>
-              <th className="sticky left-0 z-10 min-w-72 bg-[#203f70] px-2 py-1.5 text-center font-semibold">Chỉ tiêu</th>
-              {months.map((month) => <th key={month} className="min-w-20 px-2 py-1.5 font-semibold">{month}</th>)}
+              <th scope="col" className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[#203f70] px-2 py-1.5 text-center font-semibold">Chỉ tiêu</th>
+              {months.map((month) => <th scope="col" key={month} className="min-w-20 px-2 py-1.5 font-semibold">{month}</th>)}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => row.kind === "group" ? (
               <tr key={row.label} className={rowClass.group}>
-                <td className="sticky left-0 z-10 min-w-72 bg-[#d9e5f1] px-2 py-1 text-left">{row.label}</td>
+                <td className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[#d9e5f1] px-2 py-1 text-left">{row.label}</td>
                 <td colSpan={13} className="bg-[#d9e5f1] px-2 py-1" />
               </tr>
             ) : (
@@ -64,6 +65,6 @@ export function ProfitLossReport() {
         </table>
       </div>
       <p className="mt-4 text-sm text-slate-600">Thuế TNDN tính đơn giản 20% trên lãi từng tháng, để tham khảo quản trị.</p>
-    </section>
+    </ReportFrame>
   );
 }

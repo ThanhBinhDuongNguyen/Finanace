@@ -3,7 +3,7 @@ using Finance.Domain.Exceptions;
 namespace Finance.Application.Exceptions;
 
 public sealed record CreateExceptionCommand(string ReferenceType, string ReferenceId, string ShopCode, string ReasonCode, decimal? Amount, string Owner, DateOnly DueOn, string Evidence, string CreatedBy);
-public sealed record ExceptionActionCommand(string Actor, string Note, string Evidence);
+public sealed record ExceptionActionCommand(string Actor, string Note, string Evidence, string? Outcome = null);
 public sealed record ExceptionResult(Guid Id, string Status, string Owner, DateOnly DueOn, int ActivityCount);
 
 public interface IFinanceExceptionRepository

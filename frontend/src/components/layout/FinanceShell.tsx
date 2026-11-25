@@ -1,17 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
-import { useState } from "react";
-import { periods } from "../../features/dashboard/data/dashboard.mock";
+import { usePathname, useSearchParams } from "next/navigation";
+import { type ReactNode, useEffect, useRef, useSyncExternalStore } from "react";
 import { financeNavigation } from "../../routes/navigation";
+import { AppIcon, type IconName } from "../ui/AppIcon";
+
+const icons: IconName[] = ["overview", "profit", "balance", "cash", "health", "channel", "store", "tracking", "inventory", "customers", "operations"];
+const operationLinks = [
+  ["imports", "Nhập dữ liệu"], ["reconciliation", "Đối soát"], ["exceptions", "Ngoại lệ"], ["ledger", "Sổ quản trị"],
+  ["classification", "Phân loại"], ["report", "Báo cáo nguồn"], ["extensions", "Đơn & chứng từ"], ["controls", "Kiểm soát"],
+] as const;
+const storageKey = "finance.sidebar.collapsed";
+function subscribe(callback: () => void) { window.addEventListener("storage", callback); window.addEventListener("finance-sidebar", callback); return () => { window.removeEventListener("storage", callback); window.removeEventListener("finance-sidebar", callback); }; }
+function getCollapsed() { try { return localStorage.getItem(storageKey) === "true"; } catch { return false; } }
+function toggleSidebar() { try { localStorage.setItem(storageKey, String(!getCollapsed())); } catch { /* Private browsing can disable persistent preferences. */ } window.dispatchEvent(new Event("finance-sidebar")); }
 
 export function FinanceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
-  const [period, setPeriod] = useState(periods[0]);
-  const current = financeNavigation.find((item) => item.href === pathname) ?? financeNavigation[0];
+  const search = useSearchParams();
+  const collapsed = useSyncExternalStore(subscribe, getCollapsed, () => false);
+  const drawer = useRef<HTMLDialogElement>(null);
+  const operationPage = pathname === "/van-hanh-finance";
+  const selectedSection = search?.get("section") ?? "imports";
+  const current = financeNavigation.find(item => item.href === pathname) ?? financeNavigation[0];
+  useEffect(() => { drawer.current?.close(); }, [pathname, selectedSection]);
 
-  return <main className="min-h-screen bg-slate-100 text-slate-800 lg:flex"><aside className={`border-b border-slate-700 bg-[#17375e] text-white transition-[width] duration-200 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:border-b-0 lg:border-r ${sidebarExpanded ? "lg:w-56" : "lg:w-[68px]"}`}><div className={`hidden border-b border-white/10 py-5 lg:flex ${sidebarExpanded ? "px-5" : "justify-center px-2"}`}><div className={sidebarExpanded ? "" : "sr-only"}><p className="text-lg font-bold tracking-tight">Nexus Finance</p><p className="mt-1 text-xs text-blue-200">Báo cáo quản trị bán lẻ</p></div>{!sidebarExpanded && <span className="text-lg font-bold">NF</span>}</div><nav className={`flex overflow-x-auto px-3 py-3 lg:block lg:space-y-1 lg:py-5 ${sidebarExpanded ? "lg:px-3" : "lg:px-2"}`} aria-label="Báo cáo tài chính">{financeNavigation.map((item) => <Link key={item.slug} href={item.href} title={item.label} className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-medium transition lg:block lg:w-full ${sidebarExpanded ? "lg:text-left" : "lg:text-center"} ${pathname === item.href ? "bg-white text-[#17375e] shadow-sm" : "text-blue-100 hover:bg-white/10 hover:text-white"}`}><span className="lg:hidden">{item.label}</span><span className={`hidden lg:inline ${sidebarExpanded ? "" : "text-xs font-bold"}`}>{sidebarExpanded ? item.label : item.label.slice(0, 2).toUpperCase()}</span></Link>)}</nav></aside><section className="min-w-0 flex-1"><header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4 sm:px-7"><div className="flex items-center gap-3"><button onClick={() => setSidebarExpanded((value) => !value)} className="hidden rounded-md border border-slate-300 px-2.5 py-1.5 text-lg leading-none text-[#17375e] transition hover:bg-slate-100 lg:block" aria-label={sidebarExpanded ? "Thu gọn sidebar" : "Mở sidebar"} title={sidebarExpanded ? "Thu gọn sidebar" : "Mở sidebar"}>{sidebarExpanded ? "‹" : "›"}</button><div><h1 className="text-lg font-bold text-[#17375e]">{current.title}</h1><p className="mt-0.5 text-xs text-slate-500">Đơn vị: triệu đồng · dữ liệu minh họa</p></div></div><label className="flex items-center gap-2 text-sm text-slate-600">Kỳ<select value={period} onChange={(event) => setPeriod(event.target.value)} className="rounded-md border border-slate-300 bg-white px-3 py-2 font-medium text-slate-800 outline-none focus:border-[#17375e]">{periods.map((item) => <option key={item}>{item}</option>)}</select></label></header><div className="p-5 sm:p-7">{children}</div></section></main>;
+  const navigation = (mobile = false) => <nav aria-label={mobile ? "Điều hướng di động" : "Điều hướng chính"} className="finance-navigation">
+    {[{ label: "Tài chính", start: 0, end: 5 }, { label: "Phân tích bán lẻ", start: 5, end: 10 }, { label: "Vận hành", start: 10, end: 11 }].map(group => <div className="finance-nav-group" key={group.label}>
+      <p className={collapsed && !mobile ? "sr-only" : "finance-nav-label"}>{group.label}</p>
+      {financeNavigation.slice(group.start, group.end).map((item, index) => <div key={item.slug}>
+        <Link href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`finance-nav-link ${pathname === item.href ? "is-active" : ""} ${collapsed && !mobile ? "is-icon-only" : ""}`} aria-label={item.label} title={collapsed && !mobile ? item.label : undefined}>
+          <AppIcon name={icons[group.start + index]} />
+          <span className={collapsed && !mobile ? "sr-only" : ""}>{item.label}</span>
+          {collapsed && !mobile && <span className="finance-nav-tooltip" aria-hidden="true">{item.label}</span>}
+        </Link>
+        {item.slug === "van-hanh-finance" && operationPage && (!collapsed || mobile) && <div className="finance-subnav">{operationLinks.map(([id, label]) => <Link key={id} href={`/van-hanh-finance?section=${id}`} onClick={event => { if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) { event.preventDefault(); window.history.pushState(null, "", `/van-hanh-finance?section=${id}`); } }} aria-current={selectedSection === id ? "location" : undefined} className={selectedSection === id ? "is-active" : ""}>{label}</Link>)}</div>}
+      </div>)}
+    </div>)}
+  </nav>;
+
+  return <div className={`finance-shell ${collapsed ? "is-collapsed" : ""}`}>
+    <a href="#main-content" className="skip-link">Đến nội dung chính</a>
+    <aside className="finance-sidebar">
+      <Link href="/" className="finance-brand" aria-label="Nexus Finance — Tổng quan"><span className="finance-brand-mark">F<span /></span><span className={collapsed ? "sr-only" : "finance-brand-text"}>Nexus Finance<small>Quản trị tài chính</small></span></Link>
+      <div className="finance-sidebar-scroll">{navigation()}</div>
+      <div className="finance-sidebar-footer"><button type="button" onClick={toggleSidebar} aria-label={collapsed ? "Mở sidebar" : "Thu gọn sidebar"} aria-expanded={!collapsed} className="finance-collapse-button"><AppIcon name="chevron" className={collapsed ? "rotate-180" : ""} /><span className={collapsed ? "sr-only" : ""}>Thu gọn menu</span></button></div>
+    </aside>
+    <div className="finance-main-column">
+      <header className="finance-topbar">
+        <div className="flex min-w-0 items-center gap-3"><button type="button" className="finance-mobile-menu" aria-label="Mở menu điều hướng" onClick={() => drawer.current?.showModal()}><AppIcon name="menu" /></button><p className="truncate text-sm text-slate-500">Không gian làm việc <span className="mx-2 text-slate-300">/</span><span className="font-medium text-slate-700">{operationPage ? "Vận hành" : "Báo cáo"}</span></p></div>
+        <Link className="finance-topbar-action" href={operationPage ? "/" : "/van-hanh-finance"}>{operationPage ? "Xem tổng quan" : "Vận hành Finance"}<AppIcon name="arrow" width="16" height="16" /></Link>
+      </header>
+      <main id="main-content" tabIndex={-1} className="finance-main-content">
+        <div className="finance-page-heading"><div><p className="finance-eyebrow">{operationPage ? "Nghiệp vụ và kiểm soát" : "Phân tích tài chính"}</p><h1>{current.title}</h1><p className="finance-page-description">{operationPage ? "Xử lý chứng từ, đối soát và phê duyệt theo quyền được cấp." : "Theo dõi kết quả và các chỉ số quản trị chuỗi bán lẻ."}</p></div><div className="finance-page-context">{operationPage ? <span className="finance-status" data-tone="info">Dữ liệu từ hệ thống</span> : <><span className="finance-status" data-tone="warning">Báo cáo minh họa</span><span className="text-xs text-slate-500">Năm 2026 · Triệu đồng</span></>}</div></div>
+        {children}
+        <footer className="finance-page-footer">Nexus Finance<span>{operationPage ? "Quyền thao tác được kiểm tra tại hệ thống." : "Các chỉ số vận hành API được ghi nguồn riêng tại từng khu vực."}</span></footer>
+      </main>
+    </div>
+    <dialog ref={drawer} className="finance-mobile-drawer" aria-label="Menu điều hướng" onClick={event => { if (event.target === drawer.current) drawer.current.close(); }} onKeyDown={event => {
+      if (event.key !== "Tab") return;
+      const controls = event.currentTarget.querySelectorAll<HTMLElement>("a[href], button:not(:disabled)");
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }}>
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="font-semibold">Nexus Finance</span><button type="button" aria-label="Đóng menu điều hướng" onClick={() => drawer.current?.close()} className="rounded p-2 hover:bg-white/10"><AppIcon name="close" /></button></div>
+      {navigation(true)}
+    </dialog>
+  </div>;
 }

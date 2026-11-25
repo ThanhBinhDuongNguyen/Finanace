@@ -19,3 +19,10 @@ Thumbs.db
 **/bin/
 **/obj/
 **/*.db
+**/*.db-wal
+**/*.db-shm
+.next-dev/
+**/TestResults/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo

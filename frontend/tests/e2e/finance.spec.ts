@@ -1,0 +1,205 @@
+import { expect, test, type Page } from "@playwright/test";
+
+async function login(page: Page, username: string) {
+  const pageErrors: string[] = [];
+  page.on("pageerror", error => pageErrors.push(error.message));
+  await page.getByLabel("Tên đăng nhập", { exact: true }).fill(username);
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("FinanceDemo!2026");
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Đăng xuất", exact: true }), pageErrors.join("\n")).toBeVisible();
+}
+async function logout(page: Page) {
+  await page.getByRole("button", { name: "Đăng xuất", exact: true }).click();
+  await expect(page.getByLabel("Tên đăng nhập", { exact: true })).toBeVisible();
+}
+
+async function workspace(page: Page, label: string) {
+  const tab = page.getByRole("tab", { name: label, exact: true });
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-selected", "true");
+}
+
+test("browser: import preview, commit, source allocation and independent checker", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/van-hanh-finance");
+  await login(page, "maker");
+  await page.getByLabel("Kỳ báo cáo", { exact: true }).fill("2026-12");
+  const suffix = Date.now();
+  await page.getByLabel("Nội dung CSV", { exact: true }).fill(`R-${suffix},1000000,2026-12-12,Revenue\nF-${suffix},-10000,2026-12-12,PlatformFee`);
+  await page.getByRole("button", { name: "Kiểm tra trước khi nhập" }).click();
+  await expect(page.getByText("Đã kiểm tra dữ liệu.", { exact: false })).toBeVisible();
+  const beforeCommit = await page.request.get("/api/finance/import-batches");
+  expect(await beforeCommit.json()).toHaveLength(0);
+  await page.getByRole("button", { name: "Xác nhận nhập", exact: true }).click();
+  await expect(page.getByText("Đã commit batch.", { exact: true })).toBeVisible();
+
+  await workspace(page, "Đơn & chứng từ");
+  await page.getByText("Nhập snapshot dòng đơn", { exact: true }).click();
+  const orderForm = page.locator("form").filter({ has: page.getByRole("button", { name: "Lưu nhập snapshot dòng đơn", exact: true }) });
+  await orderForm.getByLabel("ID dòng nguồn", { exact: true }).fill(`OL-${suffix}`);
+  await orderForm.getByLabel("Mã đơn", { exact: true }).fill(`ORDER-${suffix}`);
+  await orderForm.getByLabel("Pháp nhân", { exact: true }).fill("NEXUS-HCM");
+  await orderForm.getByLabel("Kênh", { exact: true }).fill("TikTok");
+  await orderForm.getByLabel("SKU", { exact: true }).fill("SKU-1");
+  await orderForm.getByLabel("Nhóm SKU", { exact: true }).fill("Fashion");
+  await orderForm.getByLabel("Số lượng", { exact: true }).fill("1");
+  await orderForm.getByLabel("Giá trị thuần", { exact: true }).fill("1000000");
+  await orderForm.getByLabel("Ngày bán", { exact: true }).fill("2026-12-12");
+  await orderForm.getByLabel("Bằng chứng", { exact: true }).fill("source-order-snapshot");
+  const orderSaved = page.waitForResponse((response) => response.url().endsWith("/extensions/orders") && response.request().method() === "POST");
+  await orderForm.getByRole("button", { name: "Lưu nhập snapshot dòng đơn", exact: true }).click();
+  expect((await orderSaved).ok()).toBeTruthy();
+
+  await workspace(page, "Đối soát");
+  await page.getByLabel("Mã payout nguồn", { exact: true }).fill(`PAY-${suffix}`);
+  await page.getByLabel("Số tiền payout", { exact: true }).fill("990000");
+  await page.getByLabel("Ngày payout", { exact: true }).fill("2026-12-20");
+  const payoutSaved = page.waitForResponse((response) => response.url().endsWith("/reconciliation/payouts") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Lưu payout", exact: true }).click();
+  expect((await payoutSaved).ok()).toBeTruthy();
+
+  await page.getByLabel("Mã giao dịch ngân hàng", { exact: true }).fill(`BANK-${suffix}`);
+  await page.getByLabel("Số tiền ghi có", { exact: true }).fill("990000");
+  await page.getByLabel("Ngày ngân hàng ghi có", { exact: true }).fill("2026-12-21");
+  const bankSaved = page.waitForResponse((response) => response.url().endsWith("/reconciliation/bank-transactions") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Lưu bank transaction", exact: true }).click();
+  expect((await bankSaved).ok()).toBeTruthy();
+  await page.getByRole("combobox", { name: "Payout", exact: true }).selectOption({ label: `PAY-${suffix} · 990.000 VND` });
+  await page.getByRole("combobox", { name: "Giao dịch ngân hàng", exact: true }).selectOption({ label: `BANK-${suffix} · 990.000 VND` });
+  await page.getByLabel("Bằng chứng liên kết payout và bank", { exact: true }).fill("bank-proof-001");
+  await page.getByLabel("Lý do ghép chứng từ", { exact: true }).fill("Khóa payout và sao kê cùng đợt");
+  await page.getByRole("checkbox", { name: new RegExp(`R-${suffix}`) }).check();
+  await page.getByRole("checkbox", { name: new RegExp(`F-${suffix}`) }).check();
+  await page.getByRole("combobox", { name: `Dòng đơn cho R-${suffix}`, exact: true }).selectOption({ label: `ORDER-${suffix}/OL-${suffix} · SKU-1` });
+  const caseSaved = page.waitForResponse((response) => response.url().endsWith("/reconciliation/cases") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Đề xuất đối soát", exact: true }).click();
+  const response = await caseSaved;
+  expect(response.ok(), await response.text()).toBeTruthy();
+  await expect(page.locator("summary").filter({ hasText: "Candidate" })).toBeVisible();
+  await logout(page);
+  await login(page, "checker");
+  await page.locator("summary").filter({ hasText: "Candidate" }).click();
+  const confirmed = page.waitForResponse((response) => response.url().endsWith("/confirm") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Xác nhận đối soát", exact: true }).click();
+  expect((await confirmed).ok()).toBeTruthy();
+  await expect(page.locator("summary").filter({ hasText: "FullyMatched" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("browser: payout account proposal preserves state until independent review", async ({ page }) => {
+  const sourceRequestId = `ACCOUNT-${Date.now()}`;
+  await page.goto("/van-hanh-finance");
+  await login(page, "maker");
+  await workspace(page, "Đơn & chứng từ");
+  const panel = page.locator("details").filter({ has: page.locator("summary").filter({ hasText: /^Tài khoản nhận tiền và lịch sử thay đổi$/ }) });
+  await panel.locator("summary").first().click();
+  await panel.getByLabel("ID yêu cầu thay tài khoản", { exact: true }).fill(sourceRequestId);
+  await panel.getByLabel("Tham chiếu tài khoản nhận mới", { exact: true }).fill("BANK-VERIFIED-ACCOUNT");
+  await panel.getByLabel("Bằng chứng xác minh kênh độc lập", { exact: true }).fill("channel-independent-ticket");
+  await panel.getByLabel("Lý do đổi tài khoản", { exact: true }).fill("Đổi tài khoản nhận theo hồ sơ đã xác minh");
+  const proposed = page.waitForResponse(r => r.url().endsWith("/payout-accounts/changes") && r.request().method() === "POST");
+  await panel.getByRole("button", { name: "Đề xuất thay tài khoản", exact: true }).click();
+  expect((await proposed).ok()).toBeTruthy();
+  await expect(panel.locator("summary").filter({ hasText: sourceRequestId })).toContainText("PendingApproval");
+  const before = await page.request.get("/api/finance/extensions/payout-accounts?shopCode=TIKTOK-HCM");
+  expect((await before.json()).active).toBeNull();
+  await logout(page);
+  await login(page, "checker");
+  await panel.locator("summary").first().click();
+  const proposal = panel.locator("details").filter({ has: page.locator("summary").filter({ hasText: sourceRequestId }) });
+  await proposal.locator("summary").click();
+  await proposal.getByLabel("Bằng chứng duyệt tài khoản", { exact: true }).fill("checker-independent-verification");
+  const approved = page.waitForResponse(r => r.url().includes("/payout-accounts/changes/") && r.url().endsWith("/approve"));
+  await proposal.getByRole("button", { name: "Duyệt tài khoản nhận", exact: true }).click();
+  expect((await approved).ok()).toBeTruthy();
+  await expect(proposal.locator("summary")).toContainText("Approved");
+  await expect(panel.getByText("BANK-VERIFIED-ACCOUNT · Đang sử dụng", { exact: true })).toBeVisible();
+});
+
+test("browser: journal form rejects imbalance and controller locks monthly period", async ({ page }) => {
+  await page.goto("/van-hanh-finance");
+  await login(page, "controller");
+  await workspace(page, "Sổ quản trị");
+  await page.getByLabel("Kỳ báo cáo", { exact: true }).fill("2027-02");
+  await page.getByLabel("Loại sự kiện nguồn", { exact: true }).fill("Manual");
+  await page.getByLabel("ID sự kiện nguồn", { exact: true }).fill(`J-${Date.now()}`);
+  await page.getByLabel("Lý do bút toán", { exact: true }).fill("Đối chiếu quyết toán kỳ");
+  await page.getByLabel("Chứng từ bút toán", { exact: true }).fill("journal-proof");
+  await page.getByLabel("Tài khoản dòng 1", { exact: true }).fill("112");
+  await page.getByLabel("Tài khoản dòng 2", { exact: true }).fill("511");
+  await page.getByLabel("Nợ dòng 1", { exact: true }).fill("100");
+  await page.getByLabel("Có dòng 2", { exact: true }).fill("90");
+  await page.getByRole("button", { name: "Post journal", exact: true }).click();
+  await expect(page.locator("p[role=alert]")).toContainText("Tổng Nợ phải bằng tổng Có.");
+  await page.getByLabel("Có dòng 2", { exact: true }).fill("100");
+  const posted = page.waitForResponse((response) => response.url().endsWith("/ledger/journals") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Post journal", exact: true }).click();
+  expect((await posted).ok()).toBeTruthy();
+  await page.getByLabel("Tháng cần khóa", { exact: true }).fill("2027-02");
+  await page.getByLabel("Xác nhận bằng KHOA KY", { exact: true }).fill("KHOA KY");
+  const closed = page.waitForResponse((response) => response.url().endsWith("/periods/close"));
+  await page.getByRole("button", { name: "Khóa kỳ", exact: true }).click();
+  expect((await closed).ok()).toBeTruthy();
+  await page.getByLabel("ID sự kiện nguồn", { exact: true }).fill(`BLOCK-${Date.now()}`);
+  await page.getByRole("button", { name: "Post journal", exact: true }).click();
+  await expect(page.locator("p[role=alert]")).toContainText("khóa");
+});
+
+test("browser: versioned mapping, classification and exception checker approval", async ({ page }) => {
+  const suffix = Date.now(), sourceType = `Sale-${suffix}`;
+  await page.goto("/van-hanh-finance");
+  await login(page, "admin");
+  await workspace(page, "Phân loại");
+  const mappingForm = page.locator("form").filter({ has: page.getByRole("button", { name: "Lưu mapping", exact: true }) });
+  await mappingForm.getByLabel("Loại nghiệp vụ nguồn", { exact: true }).fill(sourceType);
+  await mappingForm.getByLabel("Nhóm phân loại đích", { exact: true }).fill("NetRevenue");
+  await mappingForm.getByLabel("Phiên bản", { exact: true }).fill("1");
+  await mappingForm.getByLabel("Hiệu lực từ", { exact: true }).fill("2027-01-01");
+  await mappingForm.getByLabel("Hiệu lực đến", { exact: true }).fill("2027-12-31");
+  const savedMapping = page.waitForResponse((response) => response.url().endsWith("/classification/mappings") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Lưu mapping", exact: true }).click();
+  const mappingResponse = await savedMapping;
+  expect(mappingResponse.ok(), await mappingResponse.text()).toBeTruthy();
+  await logout(page);
+  await login(page, "maker");
+  await workspace(page, "Nhập dữ liệu");
+  await page.getByLabel("Kỳ báo cáo", { exact: true }).fill("2027-03");
+  await page.getByLabel("Nội dung CSV", { exact: true }).fill(`REV-${suffix},100,2027-03-12,${sourceType}\nUNKNOWN-${suffix},-10,2027-03-12,Unknown-${suffix}`);
+  await page.getByRole("button", { name: "Kiểm tra trước khi nhập", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Xác nhận nhập", exact: true })).toBeVisible();
+  const savedBatch = page.waitForResponse((response) => response.url().endsWith("/finance/import-batches") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Xác nhận nhập", exact: true }).click();
+  const batch = await (await savedBatch).json();
+  await workspace(page, "Phân loại");
+  await page.getByRole("combobox", { name: "Batch cần phân loại", exact: true }).selectOption(batch.id);
+  await page.getByLabel("Ngày đối chiếu hiệu lực mapping", { exact: true }).fill("2027-03-12");
+  const classification = page.waitForResponse((response) => response.url().endsWith("/classify") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Phân loại / xử lý lại Unmapped", exact: true }).click();
+  expect(await (await classification).json()).toMatchObject({ classified: 1, unmapped: 1 });
+  await workspace(page, "Ngoại lệ");
+  const exceptionDetails = page.locator("details").filter({ has: page.locator("summary").filter({ hasText: "UNMAPPED_SOURCE_TYPE" }) });
+  await exceptionDetails.locator("summary").click();
+  await exceptionDetails.getByLabel("Lý do / kết quả xử lý", { exact: true }).fill("Đã gửi ticket, chưa có phản hồi");
+  await exceptionDetails.getByLabel("Tham chiếu bằng chứng", { exact: true }).fill("pending-external-ticket");
+  const waiting = page.waitForResponse((response) => response.url().endsWith("/wait-external"));
+  await exceptionDetails.getByRole("button", { name: "Gửi quyết định", exact: true }).click();
+  expect((await waiting).ok()).toBeTruthy();
+  await expect(exceptionDetails.locator("summary")).toContainText("WaitingExternal");
+  await exceptionDetails.getByLabel("Lý do / kết quả xử lý", { exact: true }).fill("Đã đối chiếu bằng chứng mới");
+  await exceptionDetails.getByLabel("Tham chiếu bằng chứng", { exact: true }).fill("verified-outcome-001");
+  await exceptionDetails.locator('select[name="action"]').selectOption("request");
+  await exceptionDetails.locator('select[name="outcome"]').selectOption("Verified");
+  const requested = page.waitForResponse((response) => response.url().endsWith("/request-closure"));
+  await exceptionDetails.getByRole("button", { name: "Gửi quyết định", exact: true }).click();
+  expect((await requested).ok()).toBeTruthy();
+  await logout(page);
+  await login(page, "checker");
+  await exceptionDetails.locator("summary").click();
+  await exceptionDetails.getByLabel("Lý do / kết quả xử lý", { exact: true }).fill("Đã kiểm tra độc lập");
+  await exceptionDetails.getByLabel("Tham chiếu bằng chứng", { exact: true }).fill("checker-proof");
+  const approved = page.waitForResponse((response) => response.url().endsWith("/approve-closure"));
+  await exceptionDetails.getByRole("button", { name: "Gửi quyết định", exact: true }).click();
+  expect((await approved).ok()).toBeTruthy();
+  await expect(exceptionDetails.locator("summary")).toContainText("Closed");
+});

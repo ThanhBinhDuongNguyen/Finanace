@@ -24,6 +24,9 @@ public sealed class BankTransaction
 
 public sealed class ReconciliationCase
 {
+    public string Reason { get; init; } = "";
+    public List<StatementAllocation> StatementAllocations { get; init; } = [];
+    public List<BankAllocation> BankAllocations { get; init; } = [];
     public Guid Id { get; init; } = Guid.NewGuid();
     public Guid PayoutId { get; init; }
     public Guid BankTransactionId { get; init; }
@@ -34,4 +37,30 @@ public sealed class ReconciliationCase
     public string ProposedBy { get; init; } = string.Empty;
     public string? ReviewedBy { get; set; }
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+}
+
+public sealed class StatementAllocation
+{
+    public Guid? OrderLineId { get; init; }
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid ReconciliationCaseId { get; init; }
+    public Guid ImportLineId { get; init; }
+    public decimal Amount { get; init; }
+}
+public sealed class BankAllocation
+{
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid ReconciliationCaseId { get; init; }
+    public Guid BankTransactionId { get; init; }
+    public decimal Amount { get; init; }
+}
+public sealed class TolerancePolicy
+{
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Currency { get; init; } = "";
+    public decimal Amount { get; init; }
+    public DateOnly EffectiveFrom { get; init; }
+    public DateOnly EffectiveTo { get; init; }
+    public string ApprovedBy { get; init; } = "";
+    public string Evidence { get; init; } = "";
 }

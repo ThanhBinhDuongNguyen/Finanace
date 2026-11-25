@@ -6,6 +6,7 @@ public enum ImportLineStatus { Valid, Quarantined }
 
 public sealed class ImportBatch
 {
+    public string SourceMode { get; init; } = "Local";
     public Guid Id { get; init; } = Guid.NewGuid();
     public ImportSourceType SourceType { get; init; }
     public string ShopCode { get; init; } = string.Empty;
@@ -20,6 +21,7 @@ public sealed class ImportBatch
 
 public sealed class ImportLine
 {
+    public string? SourceKey { get; init; }
     public Guid Id { get; init; } = Guid.NewGuid();
     public Guid ImportBatchId { get; init; }
     public string ExternalId { get; init; } = string.Empty;

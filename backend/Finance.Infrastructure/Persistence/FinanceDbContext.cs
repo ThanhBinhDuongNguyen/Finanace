@@ -4,11 +4,14 @@ using Finance.Domain.Reconciliation;
 using Finance.Domain.Ledger;
 using Finance.Domain.Classification;
 using Microsoft.EntityFrameworkCore;
+using Finance.Application.Security;
+using Finance.Infrastructure.Extensions;
 
 namespace Finance.Infrastructure.Persistence;
 
-public sealed class FinanceDbContext(DbContextOptions<FinanceDbContext> options) : DbContext(options)
+public sealed class FinanceDbContext(DbContextOptions<FinanceDbContext> options, ICurrentActor actor) : DbContext(options)
 {
+    public IReadOnlyList<string> AllowedShops => actor.Shops;
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<ImportLine> ImportLines => Set<ImportLine>();
     public DbSet<Payout> Payouts => Set<Payout>();
@@ -24,6 +27,8 @@ public sealed class FinanceDbContext(DbContextOptions<FinanceDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        FinanceExtensionService.ConfigureModel(modelBuilder);
+        FinanceExtensionService.ConfigureScope(modelBuilder, this);
         modelBuilder.Entity<ImportBatch>(entity =>
         {
             entity.HasKey(batch => batch.Id);
@@ -96,5 +101,39 @@ public sealed class FinanceDbContext(DbContextOptions<FinanceDbContext> options)
             entity.HasIndex(value => value.ImportLineId).IsUnique();
             entity.Property(value => value.Status).HasConversion<string>();
         });
+        modelBuilder.Entity<ImportBatch>().HasQueryFilter(value => AllowedShops.Contains(value.ShopCode));
+        modelBuilder.Entity<ImportLine>().HasQueryFilter(value => ImportBatches.Any(batch => batch.Id == value.ImportBatchId));
+        modelBuilder.Entity<Payout>().HasQueryFilter(value => AllowedShops.Contains(value.ShopCode));
+        modelBuilder.Entity<BankTransaction>().HasQueryFilter(value => AllowedShops.Contains(value.ShopCode));
+        modelBuilder.Entity<ReconciliationCase>().HasQueryFilter(value => Payouts.Any(payout => payout.Id == value.PayoutId));
+        modelBuilder.Entity<FinanceException>().HasQueryFilter(value => AllowedShops.Contains(value.ShopCode));
+        modelBuilder.Entity<ExceptionActivity>().HasQueryFilter(value => FinanceExceptions.Any(item => item.Id == value.FinanceExceptionId));
+        modelBuilder.Entity<JournalEntry>().HasQueryFilter(value => AllowedShops.Contains(value.ShopCode));
+        modelBuilder.Entity<JournalLine>().HasQueryFilter(value => JournalEntries.Any(journal => journal.Id == value.JournalEntryId));
+        modelBuilder.Entity<ClosedPeriod>().HasQueryFilter(value => AllowedShops.Contains(value.ShopCode));
+        modelBuilder.Entity<ClassifiedTransaction>().HasQueryFilter(value => ImportBatches.Any(batch => batch.Id == value.ImportBatchId));
+        modelBuilder.Entity<JournalEntry>().Property(value => value.Status).IsConcurrencyToken();
+        modelBuilder.Entity<FinanceException>().Property(value => value.Status).IsConcurrencyToken();
+        modelBuilder.Entity<ReconciliationCase>().Property(value => value.Status).IsConcurrencyToken();
+        modelBuilder.Entity<ReconciliationCase>().HasMany(v => v.StatementAllocations).WithOne().HasForeignKey(v => v.ReconciliationCaseId);
+        modelBuilder.Entity<ReconciliationCase>().HasMany(v => v.BankAllocations).WithOne().HasForeignKey(v => v.ReconciliationCaseId);
+        modelBuilder.Entity<StatementAllocation>().Property(v => v.Id).ValueGeneratedNever();
+        modelBuilder.Entity<BankAllocation>().Property(v => v.Id).ValueGeneratedNever();
+        modelBuilder.Entity<StatementAllocation>().HasOne<ImportLine>().WithMany().HasForeignKey(v => v.ImportLineId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<StatementAllocation>().HasOne<Finance.Domain.Extensions.FinanceOrderLine>().WithMany().HasForeignKey(v => v.OrderLineId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<BankAllocation>().HasOne<BankTransaction>().WithMany().HasForeignKey(v => v.BankTransactionId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<StatementAllocation>().HasQueryFilter(v => ReconciliationCases.Any(c => c.Id == v.ReconciliationCaseId));
+        modelBuilder.Entity<BankAllocation>().HasQueryFilter(v => ReconciliationCases.Any(c => c.Id == v.ReconciliationCaseId));
+        modelBuilder.Entity<TolerancePolicy>().Property(v => v.Currency).IsRequired();
+        modelBuilder.Entity<ReconciliationCase>().HasIndex(v => v.PayoutId).IsUnique();
+        modelBuilder.Entity<JournalEntry>().HasIndex(value => new { value.ShopCode, value.ReferenceType, value.ReferenceId }).IsUnique();
+        modelBuilder.Entity<ImportLine>().HasIndex(value => value.SourceKey).IsUnique();
+        modelBuilder.Entity<PeriodReopenRequest>().HasQueryFilter(v => AllowedShops.Contains(v.ShopCode));
+        modelBuilder.Entity<PeriodReopenRequest>().Property(v => v.ApprovedBy).IsConcurrencyToken();
+        modelBuilder.Entity<SourceAuthority>().HasIndex(v => v.ShopCode).IsUnique();
+        modelBuilder.Entity<SourceAuthority>().Property(v => v.Version).IsConcurrencyToken();
+        modelBuilder.Entity<SourceAuthority>().HasQueryFilter(v => AllowedShops.Contains(v.ShopCode));
+        modelBuilder.Entity<SourceSwitchRequest>().HasQueryFilter(v => AllowedShops.Contains(v.ShopCode));
+        modelBuilder.Entity<SourceSwitchRequest>().Property(v => v.ApprovedBy).IsConcurrencyToken();
     }
 }

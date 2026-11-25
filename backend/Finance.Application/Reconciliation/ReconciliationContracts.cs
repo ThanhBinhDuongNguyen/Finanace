@@ -4,7 +4,9 @@ namespace Finance.Application.Reconciliation;
 
 public sealed record PayoutInput(string ExternalId, string ShopCode, string Currency, decimal Amount, DateOnly PayoutOn);
 public sealed record BankTransactionInput(string ExternalId, string ShopCode, string Currency, decimal Amount, DateOnly CreditedOn);
-public sealed record CreateReconciliationCommand(Guid PayoutId, Guid BankTransactionId, decimal Tolerance, string Evidence, string ProposedBy);
+public sealed record StatementAllocationInput(Guid ImportLineId, decimal Amount, Guid? OrderLineId = null);
+public sealed record BankAllocationInput(Guid BankTransactionId, decimal Amount);
+public sealed record CreateReconciliationCommand(Guid PayoutId, Guid BankTransactionId, decimal Tolerance, string Evidence, string ProposedBy, string? Reason = null, IReadOnlyList<StatementAllocationInput>? Allocations = null, IReadOnlyList<BankAllocationInput>? Banks = null);
 public sealed record ReconciliationResult(Guid Id, string Status, decimal Difference, decimal Tolerance, string? ReviewedBy);
 
 public interface IReconciliationRepository
@@ -18,6 +20,7 @@ public interface IReconciliationRepository
     Task AddBankTransactionAsync(BankTransaction transaction, CancellationToken cancellationToken);
     Task AddCaseAsync(ReconciliationCase reconciliationCase, CancellationToken cancellationToken);
     Task SaveAsync(CancellationToken cancellationToken);
+    Task<decimal> GetToleranceAsync(string currency, DateOnly on, CancellationToken ct);
     Task<IReadOnlyList<Payout>> GetPayoutsAsync(CancellationToken cancellationToken);
     Task<IReadOnlyList<BankTransaction>> GetBankTransactionsAsync(CancellationToken cancellationToken);
     Task<IReadOnlyList<ReconciliationCase>> GetCasesAsync(CancellationToken cancellationToken);

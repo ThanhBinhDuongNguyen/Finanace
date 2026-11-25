@@ -4,6 +4,8 @@ public enum JournalStatus { Posted, Reversed }
 
 public sealed class JournalEntry
 {
+    public string Reason { get; init; } = "";
+    public string Evidence { get; init; } = "";
     public Guid Id { get; init; } = Guid.NewGuid();
     public Guid? ReversesJournalEntryId { get; init; }
     public string ReferenceType { get; init; } = string.Empty;

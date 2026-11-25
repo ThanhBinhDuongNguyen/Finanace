@@ -1,6 +1,6 @@
 namespace Finance.Domain.Exceptions;
 
-public enum FinanceExceptionStatus { Open, PendingApproval, Closed }
+public enum FinanceExceptionStatus { Open, PendingApproval, Closed, WaitingExternal }
 
 public sealed class FinanceException
 {

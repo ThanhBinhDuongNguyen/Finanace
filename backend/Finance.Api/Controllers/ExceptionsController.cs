@@ -7,6 +7,8 @@ namespace Finance.Api.Controllers;
 [Route("api/finance/exceptions")]
 public sealed class ExceptionsController(ExceptionService service, IFinanceExceptionRepository repository) : ControllerBase
 {
+    [HttpPost("{id:guid}/wait-external")]
+    public async Task<ActionResult<ExceptionResult>> WaitExternal(Guid id, ExceptionActionCommand command, CancellationToken ct) => await Execute(() => service.WaitExternalAsync(id, command, ct));
     [HttpPost]
     public async Task<ActionResult<ExceptionResult>> Create(CreateExceptionCommand command, CancellationToken cancellationToken) => await Execute(() => service.CreateAsync(command, cancellationToken));
     [HttpPost("{id:guid}/request-closure")]

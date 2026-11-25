@@ -1,3 +1,5 @@
+import { ReportFrame } from "../../../components/ui/ReportFrame";
+
 type MetricUnit = "percent" | "ratio" | "number";
 type Comparison = "gte" | "lte" | "neutral";
 
@@ -34,11 +36,17 @@ function formatValue(value: number, unit: MetricUnit) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ",");
 }
 
+function statusLabel(row: MetricRow, value: number) {
+  if (row.comparison === "neutral") return "Chỉ số tham khảo";
+  const passed = row.comparison === "gte" ? value >= row.threshold : value <= row.threshold;
+  return passed ? "Đạt ngưỡng" : "Chưa đạt ngưỡng";
+}
+
 function statusClass(row: MetricRow, value: number) {
   const passed = row.comparison === "gte" ? value >= row.threshold : row.comparison === "lte" ? value <= row.threshold : undefined;
-  return passed === undefined ? "" : passed ? "bg-[#dff2e3]" : "bg-[#f9dedd]";
+  return passed === undefined ? "" : passed ? "finance-health-pass bg-[#dff2e3]" : "finance-health-fail bg-[#f9dedd]";
 }
 
 export function FinancialHealthReport() {
-  return <section className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><h2 className="mb-3 text-base font-bold text-[#17375e]">Chỉ số sức khỏe tài chính (xanh = đạt ngưỡng, đỏ = chưa đạt)</h2><div className="overflow-x-auto"><table className="min-w-[1320px] w-full border-collapse text-right text-sm"><thead className="bg-[#203f70] text-white"><tr><th className="sticky left-0 z-10 min-w-72 bg-[#203f70] px-2 py-1.5 text-center">Chỉ số</th><th className="sticky left-72 z-10 min-w-24 bg-[#203f70] px-2 py-1.5 text-center">Ngưỡng</th>{months.map((month) => <th key={month} className="min-w-20 px-2 py-1.5">{month}</th>)}</tr></thead><tbody>{rows.map((row) => row.type === "group" ? <tr key={row.label} className="bg-[#d9e5f1] font-bold text-[#17375e]"><td className="sticky left-0 z-10 min-w-72 bg-[#d9e5f1] px-2 py-1 text-left">{row.label}</td><td className="sticky left-72 z-10 min-w-24 bg-[#d9e5f1] px-2 py-1" /><td colSpan={12} className="bg-[#d9e5f1] px-2 py-1" /></tr> : <tr key={row.label} className="border-b border-slate-200"><td className="sticky left-0 z-10 bg-white px-2 py-1 text-left whitespace-nowrap">{row.label}</td><td className="sticky left-72 z-10 bg-white px-2 py-1 whitespace-nowrap text-slate-600">{row.thresholdLabel}</td>{row.values.map((value, index) => <td key={`${row.label}-${months[index]}`} className={`px-2 py-1 whitespace-nowrap ${statusClass(row, value)}`}>{formatValue(value, row.unit)}</td>)}</tr>)}</tbody></table></div><p className="mt-4 text-sm text-slate-600">Ngưỡng tham khảo cho bán lẻ thời trang – mỹ phẩm, đặt để minh họa.</p></section>;
+  return <ReportFrame title="Chỉ số sức khỏe tài chính" description="Chỉ số và ngưỡng tham khảo; đơn vị thể hiện theo từng dòng." scrollHint><div className="finance-table-scroll" tabIndex={0} role="region" aria-label="Bảng số liệu có thể cuộn ngang"><table className="finance-table finance-health-table min-w-[1320px]"><caption className="sr-only">Chỉ số sức khỏe tài chính</caption><thead className="bg-[#203f70] text-white"><tr><th scope="col" className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[#203f70] px-2 py-1.5 text-center">Chỉ số</th><th scope="col" className="sticky left-[var(--report-label-width)] z-10 min-w-24 bg-[#203f70] px-2 py-1.5 text-center">Ngưỡng</th>{months.map((month) => <th scope="col" key={month} className="min-w-20 px-2 py-1.5">{month}</th>)}</tr></thead><tbody>{rows.map((row) => row.type === "group" ? <tr key={row.label} className="finance-row-group bg-[#d9e5f1] font-bold text-[#17375e]"><td className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[#d9e5f1] px-2 py-1 text-left">{row.label}</td><td className="sticky left-[var(--report-label-width)] z-10 min-w-24 bg-[#d9e5f1] px-2 py-1" /><td colSpan={12} className="bg-[#d9e5f1] px-2 py-1" /></tr> : <tr key={row.label} className="border-b border-slate-200"><td className="sticky left-0 z-10 bg-white px-2 py-1 text-left whitespace-nowrap">{row.label}</td><td className="sticky left-[var(--report-label-width)] z-10 bg-white px-2 py-1 whitespace-nowrap text-slate-600">{row.thresholdLabel}</td>{row.values.map((value, index) => <td key={`${row.label}-${months[index]}`} title={statusLabel(row, value)} aria-label={`${formatValue(value, row.unit)} · ${statusLabel(row, value)}`} className={`px-2 py-1 whitespace-nowrap ${statusClass(row, value)}`}>{formatValue(value, row.unit)}</td>)}</tr>)}</tbody></table></div><p className="finance-report-meta mt-4">Xanh: đạt ngưỡng; đỏ: cần theo dõi. Ngưỡng tham khảo cho bán lẻ thời trang – mỹ phẩm, đặt để minh họa.</p></ReportFrame>;
 }

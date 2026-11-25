@@ -21,9 +21,9 @@ public sealed class ClassifiedTransaction
     public Guid Id { get; init; } = Guid.NewGuid();
     public Guid ImportBatchId { get; init; }
     public Guid ImportLineId { get; init; }
-    public Guid? ClassificationMappingId { get; init; }
-    public string Category { get; init; } = string.Empty;
-    public ClassificationStatus Status { get; init; }
+    public Guid? ClassificationMappingId { get; set; }
+    public string Category { get; set; } = string.Empty;
+    public ClassificationStatus Status { get; set; }
     public string ClassifiedBy { get; init; } = string.Empty;
     public DateTimeOffset ClassifiedAt { get; init; } = DateTimeOffset.UtcNow;
 }

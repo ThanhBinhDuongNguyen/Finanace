@@ -1,11 +1,20 @@
 :root {
-  --canvas: #f4f6f8;
+  --canvas: #f5f7fa;
   --surface: #ffffff;
-  --ink: #172133;
-  --muted: #657187;
-  --line: #dce2ea;
-  --brand: #123b63;
-  --brand-soft: #eaf2fa;
+  --ink: #1e293b;
+  --muted: #5c6c81;
+  --line: #e0e6ee;
+  --brand: #1e4068;
+  --brand-hover: #142f50;
+  --brand-soft: #edf3fa;
+  --nav: #132e4b;
+  --nav-muted: #a7bdd2;
   --positive: #17765c;
   --warning: #b25e09;
+  --danger: #b42332;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --shadow-panel: 0 2px 5px rgb(30 64 104 / 3%);
+  --report-label-width: 16rem;
 }

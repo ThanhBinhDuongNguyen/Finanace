@@ -168,12 +168,655 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.ToTable("FinanceExceptions");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CostLayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FinanceCostAssessmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CostLayerId");
+
+                    b.HasIndex("FinanceCostAssessmentId");
+
+                    b.ToTable("FinanceCostAllocation");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Adjustment")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AssessedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("PolicyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("PostedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ReplacesAssessmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderLineId", "Status")
+                        .IsUnique();
+
+                    b.ToTable("FinanceCostAssessment");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostLayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("ReceivedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceReceiptId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UsedQuantity")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "Sku", "SourceReceiptId")
+                        .IsUnique();
+
+                    b.ToTable("FinanceCostLayer");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Period")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SkuGroup")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "SkuGroup", "Period")
+                        .IsUnique();
+
+                    b.ToTable("FinanceCostPolicy");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "ExternalId")
+                        .IsUnique();
+
+                    b.ToTable("FinanceDocument");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceDocumentRevision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FinanceDocumentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReviewNote")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReviewedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UploadedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinanceDocumentId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("FinanceDocumentRevision");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceExtensionAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FinanceExtensionAudit");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceFailedDeliveryFee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ImportLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("OccurredOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecordedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceFeeId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "SourceFeeId")
+                        .IsUnique();
+
+                    b.ToTable("FinanceFailedDeliveryFee");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceOrderLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImportedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LegalEntity")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("OccurredOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SkuGroup")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "ExternalId")
+                        .IsUnique();
+
+                    b.ToTable("FinanceOrderLine");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceRefundRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovalEvidence")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequestedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceRequestId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderLineId");
+
+                    b.HasIndex("ShopCode", "SourceRequestId")
+                        .IsUnique();
+
+                    b.ToTable("FinanceRefundRequest");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceReturnCostAdjustment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Disposition")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FinalAssessmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("PostedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecordedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceQcId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinalAssessmentId");
+
+                    b.HasIndex("OrderLineId");
+
+                    b.HasIndex("ShopCode", "SourceQcId")
+                        .IsUnique();
+
+                    b.ToTable("FinanceReturnCostAdjustment");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.PayoutAccountChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovalEvidence")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IndependentChannelEvidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NewAccountReference")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("PreviousAccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("ProposedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProposedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceRequestId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "SourceRequestId")
+                        .IsUnique();
+
+                    b.ToTable("PayoutAccountChange");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.PayoutReceivingAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AccountReference")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("ActivatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ApprovedChangeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("DeactivatedAt")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedChangeId")
+                        .IsUnique();
+
+                    b.HasIndex("ShopCode")
+                        .IsUnique()
+                        .HasFilter("\"DeactivatedAt\" IS NULL");
+
+                    b.ToTable("PayoutReceivingAccount");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.RefundConfirmation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ApprovedRequestId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConfirmedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("ConfirmedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("JournalEntryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceRefundId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.HasIndex("OrderLineId");
+
+                    b.HasIndex("ShopCode", "SourceRefundId")
+                        .IsUnique();
+
+                    b.ToTable("RefundConfirmation");
                 });
 
             modelBuilder.Entity("Finance.Domain.Imports.ImportBatch", b =>
@@ -202,6 +845,10 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceMode")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -249,6 +896,9 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SourceKey")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -260,7 +910,82 @@ namespace Finance.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ImportBatchId");
 
+                    b.HasIndex("SourceKey")
+                        .IsUnique();
+
                     b.ToTable("ImportLines");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Imports.SourceAuthority", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopCode")
+                        .IsUnique();
+
+                    b.ToTable("SourceAuthority");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Imports.SourceSwitchRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Checkpoint")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ExpectedVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MappingManifest")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OpenWorkManifest")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProposedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetMode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SourceSwitchRequest");
                 });
 
             modelBuilder.Entity("Finance.Domain.Ledger.ClosedPeriod", b =>
@@ -302,6 +1027,10 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Period")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -310,6 +1039,10 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PostedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -329,10 +1062,14 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShopCode", "ReferenceType", "ReferenceId")
+                        .IsUnique();
 
                     b.ToTable("JournalEntries");
                 });
@@ -361,6 +1098,66 @@ namespace Finance.Infrastructure.Persistence.Migrations
                     b.HasIndex("JournalEntryId");
 
                     b.ToTable("JournalLines");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Ledger.PeriodReopenRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Period")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProposedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShopCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PeriodReopenRequest");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Reconciliation.BankAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("BankTransactionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ReconciliationCaseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankTransactionId");
+
+                    b.HasIndex("ReconciliationCaseId");
+
+                    b.ToTable("BankAllocation");
                 });
 
             modelBuilder.Entity("Finance.Domain.Reconciliation.BankTransaction", b =>
@@ -455,10 +1252,15 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ReviewedBy")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -467,10 +1269,73 @@ namespace Finance.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PayoutId")
+                        .IsUnique();
+
                     b.HasIndex("PayoutId", "BankTransactionId")
                         .IsUnique();
 
                     b.ToTable("ReconciliationCases");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Reconciliation.StatementAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ImportLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("OrderLineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ReconciliationCaseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImportLineId");
+
+                    b.HasIndex("OrderLineId");
+
+                    b.HasIndex("ReconciliationCaseId");
+
+                    b.ToTable("StatementAllocation");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Reconciliation.TolerancePolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EffectiveTo")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TolerancePolicy");
                 });
 
             modelBuilder.Entity("Finance.Domain.Exceptions.ExceptionActivity", b =>
@@ -479,6 +1344,87 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .WithMany("Activities")
                         .HasForeignKey("FinanceExceptionId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostAllocation", b =>
+                {
+                    b.HasOne("Finance.Domain.Extensions.FinanceCostLayer", null)
+                        .WithMany()
+                        .HasForeignKey("CostLayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Finance.Domain.Extensions.FinanceCostAssessment", null)
+                        .WithMany("Allocations")
+                        .HasForeignKey("FinanceCostAssessmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostAssessment", b =>
+                {
+                    b.HasOne("Finance.Domain.Extensions.FinanceOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceDocumentRevision", b =>
+                {
+                    b.HasOne("Finance.Domain.Extensions.FinanceDocument", null)
+                        .WithMany("Revisions")
+                        .HasForeignKey("FinanceDocumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceRefundRequest", b =>
+                {
+                    b.HasOne("Finance.Domain.Extensions.FinanceOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceReturnCostAdjustment", b =>
+                {
+                    b.HasOne("Finance.Domain.Extensions.FinanceCostAssessment", null)
+                        .WithMany()
+                        .HasForeignKey("FinalAssessmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Finance.Domain.Extensions.FinanceOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.PayoutReceivingAccount", b =>
+                {
+                    b.HasOne("Finance.Domain.Extensions.PayoutAccountChange", null)
+                        .WithMany()
+                        .HasForeignKey("ApprovedChangeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.RefundConfirmation", b =>
+                {
+                    b.HasOne("Finance.Domain.Ledger.JournalEntry", null)
+                        .WithMany()
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Finance.Domain.Extensions.FinanceOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -500,9 +1446,54 @@ namespace Finance.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Finance.Domain.Reconciliation.BankAllocation", b =>
+                {
+                    b.HasOne("Finance.Domain.Reconciliation.BankTransaction", null)
+                        .WithMany()
+                        .HasForeignKey("BankTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Finance.Domain.Reconciliation.ReconciliationCase", null)
+                        .WithMany("BankAllocations")
+                        .HasForeignKey("ReconciliationCaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Reconciliation.StatementAllocation", b =>
+                {
+                    b.HasOne("Finance.Domain.Imports.ImportLine", null)
+                        .WithMany()
+                        .HasForeignKey("ImportLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Finance.Domain.Extensions.FinanceOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Finance.Domain.Reconciliation.ReconciliationCase", null)
+                        .WithMany("StatementAllocations")
+                        .HasForeignKey("ReconciliationCaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Finance.Domain.Exceptions.FinanceException", b =>
                 {
                     b.Navigation("Activities");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceCostAssessment", b =>
+                {
+                    b.Navigation("Allocations");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Extensions.FinanceDocument", b =>
+                {
+                    b.Navigation("Revisions");
                 });
 
             modelBuilder.Entity("Finance.Domain.Imports.ImportBatch", b =>
@@ -513,6 +1504,13 @@ namespace Finance.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Finance.Domain.Ledger.JournalEntry", b =>
                 {
                     b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Reconciliation.ReconciliationCase", b =>
+                {
+                    b.Navigation("BankAllocations");
+
+                    b.Navigation("StatementAllocations");
                 });
 #pragma warning restore 612, 618
         }
