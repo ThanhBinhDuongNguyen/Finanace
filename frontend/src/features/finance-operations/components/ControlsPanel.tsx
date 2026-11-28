@@ -29,7 +29,7 @@ export function ControlsPanel({ shopCode, currency, roles, username, period }: C
   const submit = (event: FormEvent<HTMLFormElement>, run: (form: FormData) => Promise<unknown>) => { event.preventDefault(); const form = new FormData(event.currentTarget); action.mutate(() => run(form)); };
   const loadError = [policies, reopens, sources].find((query) => query.isError);
   return <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-    <h2 className="text-base font-semibold text-[#17375e]">Kiểm soát kỳ, dung sai và chuyển nguồn</h2>
+    <h2 className="text-base font-semibold text-[var(--brand)]">Kiểm soát kỳ, dung sai và chuyển nguồn</h2>
     {action.isError && <p role="alert" className="text-sm text-red-700">{apiError(action.error)}</p>}
     {action.isSuccess && <p role="status" className="text-sm text-blue-700">Đã lưu quyết định kiểm soát.</p>}
     {loadError && <p role="alert" className="text-sm text-amber-700">{apiError(loadError.error)}</p>}

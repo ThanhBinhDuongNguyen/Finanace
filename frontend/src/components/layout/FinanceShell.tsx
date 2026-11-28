@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { trapDialogFocus } from "../../lib/dialog-focus";
 import { usePathname, useSearchParams } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useSyncExternalStore } from "react";
 import { financeNavigation } from "../../routes/navigation";
@@ -43,7 +44,7 @@ export function FinanceShell({ children }: { children: ReactNode }) {
   return <div className={`finance-shell ${collapsed ? "is-collapsed" : ""}`}>
     <a href="#main-content" className="skip-link">Đến nội dung chính</a>
     <aside className="finance-sidebar">
-      <Link href="/" className="finance-brand" aria-label="Nexus Finance — Tổng quan"><span className="finance-brand-mark">F<span /></span><span className={collapsed ? "sr-only" : "finance-brand-text"}>Nexus Finance<small>Quản trị tài chính</small></span></Link>
+      <Link href="/" className="finance-brand" aria-label="Nexus Finance — Tổng quan"><span className="nexus-brand-mark">N</span><span className={collapsed ? "sr-only" : "finance-brand-text"}>NexusOMS<small>Tài chính</small></span></Link>
       <div className="finance-sidebar-scroll">{navigation()}</div>
       <div className="finance-sidebar-footer"><button type="button" onClick={toggleSidebar} aria-label={collapsed ? "Mở sidebar" : "Thu gọn sidebar"} aria-expanded={!collapsed} className="finance-collapse-button"><AppIcon name="chevron" className={collapsed ? "rotate-180" : ""} /><span className={collapsed ? "sr-only" : ""}>Thu gọn menu</span></button></div>
     </aside>
@@ -58,14 +59,8 @@ export function FinanceShell({ children }: { children: ReactNode }) {
         <footer className="finance-page-footer">Nexus Finance<span>{operationPage ? "Quyền thao tác được kiểm tra tại hệ thống." : "Các chỉ số vận hành API được ghi nguồn riêng tại từng khu vực."}</span></footer>
       </main>
     </div>
-    <dialog ref={drawer} className="finance-mobile-drawer" aria-label="Menu điều hướng" onClick={event => { if (event.target === drawer.current) drawer.current.close(); }} onKeyDown={event => {
-      if (event.key !== "Tab") return;
-      const controls = event.currentTarget.querySelectorAll<HTMLElement>("a[href], button:not(:disabled)");
-      const first = controls[0], last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-    }}>
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="font-semibold">Nexus Finance</span><button type="button" aria-label="Đóng menu điều hướng" onClick={() => drawer.current?.close()} className="rounded p-2 hover:bg-white/10"><AppIcon name="close" /></button></div>
+    <dialog ref={drawer} className="finance-mobile-drawer" aria-label="Menu điều hướng" onClick={event => { if (event.target === drawer.current) drawer.current.close(); }} onKeyDown={trapDialogFocus}>
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="font-semibold">NexusOMS · Tài chính</span><button type="button" aria-label="Đóng menu điều hướng" onClick={() => drawer.current?.close()} className="rounded p-2 hover:bg-white/10"><AppIcon name="close" /></button></div>
       {navigation(true)}
     </dialog>
   </div>;

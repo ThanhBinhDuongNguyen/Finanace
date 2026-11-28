@@ -32,7 +32,7 @@ const rows: ProfitLossRow[] = [
 ];
 
 const rowClass: Record<RowKind, string> = {
-  group: "finance-row-group bg-[#d9e5f1] font-bold text-[#17375e]",
+  group: "finance-row-group bg-[var(--brand-soft)] font-bold text-[var(--brand)]",
   total: "finance-row-total font-bold text-slate-950",
   margin: "italic text-slate-600",
   standard: "text-slate-700",
@@ -43,17 +43,17 @@ export function ProfitLossReport() {
     <ReportFrame title="Báo cáo kết quả kinh doanh theo tháng" description="Đơn vị tài chính: triệu đồng; tỷ lệ và số lượng theo tiêu đề cột." scrollHint>
       <div className="finance-table-scroll" tabIndex={0} role="region" aria-label="Bảng số liệu có thể cuộn ngang">
         <table className="finance-table min-w-[1280px]"><caption className="sr-only">Báo cáo kết quả kinh doanh theo tháng</caption>
-          <thead className="bg-[#203f70] text-white">
+          <thead className="bg-[var(--brand)] text-white">
             <tr>
-              <th scope="col" className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[#203f70] px-2 py-1.5 text-center font-semibold">Chỉ tiêu</th>
+              <th scope="col" className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[var(--brand)] px-2 py-1.5 text-center font-semibold">Chỉ tiêu</th>
               {months.map((month) => <th scope="col" key={month} className="min-w-20 px-2 py-1.5 font-semibold">{month}</th>)}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => row.kind === "group" ? (
               <tr key={row.label} className={rowClass.group}>
-                <td className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[#d9e5f1] px-2 py-1 text-left">{row.label}</td>
-                <td colSpan={13} className="bg-[#d9e5f1] px-2 py-1" />
+                <td className="sticky left-0 z-10 min-w-[var(--report-label-width)] bg-[var(--brand-soft)] px-2 py-1 text-left">{row.label}</td>
+                <td colSpan={13} className="bg-[var(--brand-soft)] px-2 py-1" />
               </tr>
             ) : (
               <tr key={row.label} className={`border-b border-slate-200 ${rowClass[row.kind]}`}>

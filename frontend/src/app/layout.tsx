@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  icons: { icon: "/favicon.svg" },
   title: "Nexus Finance",
   description: "Báo cáo quản trị chuỗi bán lẻ",
 };

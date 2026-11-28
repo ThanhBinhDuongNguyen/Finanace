@@ -20,10 +20,10 @@ export function FinanceDashboard() {
       <ReportFrame title="Doanh thu & lợi nhuận sau thuế" description="Theo tháng · Đơn vị: triệu đồng">
         <div className="finance-chart"><ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={monthlyPerformance} margin={{ top: 12, right: 10, left: -12, bottom: 38 }}>
-            <CartesianGrid stroke="#d7dde5" vertical={false} /><XAxis dataKey="month" angle={-50} textAnchor="end" interval={0} tick={{ fontSize: 11 }} />
-            <YAxis yAxisId="left" tick={{ fontSize: 11 }} /><YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
-            <Tooltip /><Legend verticalAlign="top" height={30} /><Bar isAnimationActive={false} yAxisId="left" dataKey="revenue" name="Doanh thu" fill="#203f70" />
-            <Line isAnimationActive={false} yAxisId="right" type="monotone" dataKey="profit" name="LN sau thuế" stroke="#ee7d19" strokeWidth={3} dot={{ r: 3 }} />
+            <CartesianGrid stroke="var(--line)" vertical={false} /><XAxis dataKey="month" angle={-50} textAnchor="end" interval={0} tick={{ fontSize: 12 }} />
+            <YAxis yAxisId="left" tick={{ fontSize: 12 }} /><YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+            <Tooltip /><Legend verticalAlign="top" height={30} /><Bar isAnimationActive={false} yAxisId="left" dataKey="revenue" name="Doanh thu" fill="var(--brand)" />
+            <Line isAnimationActive={false} yAxisId="right" type="monotone" dataKey="profit" name="LN sau thuế" stroke="var(--chart-3)" strokeWidth={3} dot={{ r: 3 }} />
           </ComposedChart>
         </ResponsiveContainer></div>
       </ReportFrame>
@@ -34,12 +34,12 @@ export function FinanceDashboard() {
       </ReportFrame>
       <ReportFrame title="Lợi nhuận theo cửa hàng" description="Kỳ 12/2026 · Đơn vị: triệu đồng">
         <div className="finance-chart"><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={storeProfit} layout="vertical" margin={{ top: 28, right: 15, left: 5, bottom: 15 }}><CartesianGrid stroke="#d7dde5" horizontal={false} /><XAxis type="number" tick={{ fontSize: 11 }} /><YAxis dataKey="name" type="category" width={145} tick={{ fontSize: 11 }} /><Tooltip /><Bar isAnimationActive={false} dataKey="value" name="Lợi nhuận" fill="#347cba" /></BarChart>
+          <BarChart data={storeProfit} layout="vertical" margin={{ top: 28, right: 15, left: 5, bottom: 15 }}><CartesianGrid stroke="var(--line)" horizontal={false} /><XAxis type="number" tick={{ fontSize: 12 }} /><YAxis dataKey="name" type="category" width={145} tick={{ fontSize: 12 }} /><Tooltip /><Bar isAnimationActive={false} dataKey="value" name="Lợi nhuận" fill="var(--brand)" /></BarChart>
         </ResponsiveContainer></div>
       </ReportFrame>
       <ReportFrame title="Biên lãi gộp theo nhóm hàng" description="Kỳ 12/2026 · Đơn vị: %">
         <div className="finance-chart"><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={grossMargins} margin={{ top: 10, right: 10, left: -15, bottom: 40 }}><CartesianGrid stroke="#d7dde5" vertical={false} /><XAxis dataKey="name" angle={-18} textAnchor="end" interval={0} tick={{ fontSize: 11 }} /><YAxis unit="%" domain={[0, 60]} /><Tooltip formatter={(value) => `${value}%`} /><Bar isAnimationActive={false} dataKey="value" name="Biên lãi gộp" fill="#0aa3a1" /></BarChart>
+          <BarChart data={grossMargins} margin={{ top: 10, right: 10, left: -15, bottom: 40 }}><CartesianGrid stroke="var(--line)" vertical={false} /><XAxis dataKey="name" angle={-18} textAnchor="end" interval={0} tick={{ fontSize: 12 }} /><YAxis unit="%" domain={[0, 60]} /><Tooltip formatter={(value) => `${value}%`} /><Bar isAnimationActive={false} dataKey="value" name="Biên lãi gộp" fill="var(--chart-2)" /></BarChart>
         </ResponsiveContainer></div>
       </ReportFrame>
     </div>

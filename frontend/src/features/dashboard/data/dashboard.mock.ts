@@ -31,10 +31,10 @@ export const monthlyPerformance: MonthlyPerformance[] = [
 ];
 
 export const channelMix: ChannelMix[] = [
-  { name: "Cửa hàng", value: 78, color: "#203f70" },
-  { name: "Website", value: 5, color: "#347cba" },
-  { name: "Shopee", value: 10, color: "#0aa3a1" },
-  { name: "TikTok Shop", value: 7, color: "#ee7d19" },
+  { name: "Cửa hàng", value: 78, color: "var(--chart-1)" },
+  { name: "Website", value: 5, color: "var(--chart-4)" },
+  { name: "Shopee", value: 10, color: "var(--chart-2)" },
+  { name: "TikTok Shop", value: 7, color: "var(--chart-3)" },
 ];
 
 export const storeProfit: StoreProfit[] = [
